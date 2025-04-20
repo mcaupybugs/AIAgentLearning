@@ -1,20 +1,19 @@
 import os
+from semantic_kernel import Kernel
+from semantic_kernel.memory.memory_record import MemoryRecord
+
+from main import initialize_chat_service
 from dotenv import load_dotenv
 from openai import AzureOpenAI
 
-class AzureChatBot():
-    def __init__(self, model_deployment='gpt-4'):
+class LLMBrain():
+    def __init__(self):
         load_dotenv()
-        self.client =  AzureOpenAI(
-        azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"),
-        api_key = os.getenv("OPEN_AI_API_KEY"),
-        api_version="2024-12-01-preview"
-        )
-        self.model = model_deployment
+        kernel = Kernel()
+        initialize_chat_service(kernel=kernel)
+
+        with open("context.txt", "r") as f:
+            content = f.read()
+            kernel.memory.store(MemoryRecord(text=content))
+
     
-    def ask(self, messages):
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=messages
-        )
-        return response.choices[0].message.content

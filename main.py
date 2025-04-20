@@ -1,6 +1,9 @@
 import os
 from dotenv import load_dotenv
 from openai import AzureOpenAI
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+
 
 model_name = 'gpt-4o'
 deployment = 'gpt-4'
@@ -8,6 +11,13 @@ deployment = 'gpt-4'
 def load_api_key():
     """Load API key from .env file"""
     load_dotenv()
+
+def initialize_chat_service(kernel):
+    kernel.add_service(AzureChatCompletion(
+        deployment_name=os.getenv('DEPLOYMENT_NAME'),
+        api_key=os.getenv("OPEN_AI_API_KEY"),
+        base_url=os.getenv("BASE_URL")
+    ))
 
 def create_openai_model():
     """OpenAI model creation logic."""
