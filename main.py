@@ -1,53 +1,25 @@
 import os
 from dotenv import load_dotenv
 from openai import AzureOpenAI
-from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from llm_brain import LLMBrain
 
-
-model_name = 'gpt-4o'
-deployment = 'gpt-4'
-
-def load_api_key():
-    """Load API key from .env file"""
-    load_dotenv()
-
-def initialize_chat_service(kernel):
-    kernel.add_service(AzureChatCompletion(
-        deployment_name=os.getenv('DEPLOYMENT_NAME'),
-        api_key=os.getenv("OPEN_AI_API_KEY"),
-        base_url=os.getenv("BASE_URL")
-    ))
-
-def create_openai_model():
-    """OpenAI model creation logic."""
-    open_ai_client = AzureOpenAI(
-        azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"),
-        api_key = os.getenv("OPEN_AI_API_KEY"),
-        api_version="2024-12-01-preview"
-    )
-
-    return open_ai_client
-
-def chat(client):
-    """Chat with the AI bot"""
-    response = client.chat.completions.create(
-    model="gpt-35-turbo", # model = "deployment_name".
-    messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Does Azure OpenAI support customer managed keys?"},
-        {"role": "assistant", "content": "Yes, customer managed keys are supported by Azure OpenAI."},
-        {"role": "user", "content": "Do other Azure AI services support this too?"}
-    ]
-)
-
-    print(response.choices[0].message.content)
 def main():
     try:
-        load_api_key()
-
-        open_ai_client = create_openai_model()
-        chat(open_ai_client)
+        # Initialize the LLMBrain
+        llm_brain = LLMBrain()
+        
+        while True:
+            query = input("How can I help you sir?\n")
+            message = [
+                {
+                    "role": "user",
+                    "content": query
+                }
+            ]
+            
+            # Use the chat method from LLMBrain
+            response = llm_brain.chat(message)
+            print(response)
 
     except Exception as e:
         print(f"Error: {e}")
