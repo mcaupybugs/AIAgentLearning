@@ -1,25 +1,49 @@
 import os
 from dotenv import load_dotenv
-from openai import AzureOpenAI
+from openai import AsyncAzureOpenAI
+from memory.memory_interface import MemoryInterface
+from typing import Optional, List, Dict
+import uuid
 
 class LLMBrain():
-    def __init__(self):
-        """Load API key from .env file"""
+    def __init__(self, memory_system: Optional[MemoryInterface] = None, 
+                 max_tokens: int = 1000, 
+                 fact_max_tokens: int = 500):
+        """Initialize the LLMBrain with an optional memory system.
+        
+        Args:
+            memory_system: Optional memory system for storing and retrieving messages
+            max_tokens: Maximum number of tokens for the main chat response
+            fact_max_tokens: Maximum number of tokens for the fact extraction response
+        """
         load_dotenv()
-        self.open_ai_client = AzureOpenAI(
+        self.open_ai_client = AsyncAzureOpenAI(
             azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"),
             api_key = os.getenv("OPEN_AI_API_KEY"),
             api_version="2024-12-01-preview"
         )
+        self.memory = memory_system
+        self.model_name = "gpt-4o"
+        self.deployment = "gpt-4o"
+        self.max_tokens = max_tokens
+        self.fact_max_tokens = fact_max_tokens
+            
 
-    def chat(self, message):
-        """Chat with the AI bot"""
-        model_name = "gpt-4o"
-        deployment = "gpt-4o"
+    # TODO: (Optional) Check what are the messages getting saved in the memory
+    async def chat(self, message: List[Dict[str, str]], session_id: Optional[str] = None) -> str:
+        """Chat with the AI bot and optionally store the message in memory."""
+        if session_id is None:
+            session_id = str(uuid.uuid4())
 
-        response = self.open_ai_client.chat.completions.create(
-            model=deployment, # model = "deployment_name".
-            messages=message
+        augmented_messages = message.copy()
+        
+        # Get response from LLM
+        response = await self.open_ai_client.chat.completions.create(
+            model=self.deployment,
+            messages=augmented_messages,
+            max_tokens=self.max_tokens
         )
         
-        return response.choices[0].message.content
+        response_content = response.choices[0].message.content
+            
+        return response_content
