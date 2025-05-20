@@ -23,7 +23,7 @@ async def main():
 
         print("Welcome to the LLM Brain! Type 'exit' to quit.")
         conversation_history = []
-
+        print("Conversation history :", conversation_history)
         while True:
             query = input("How can I help you sir?\n")
             if query.lower() in ["exit", "quit"]:
@@ -45,6 +45,9 @@ async def main():
                 "content": response
             })
             
+            # Store the conversation in memory
+            await llm_brain.store_messages(session_id=session_id, messages=conversation_history[-2:])
+
             # Keep history manageable
             if len(conversation_history) > 10:
                 # Keep only the last 10 messages

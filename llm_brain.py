@@ -36,14 +36,25 @@ class LLMBrain():
             session_id = str(uuid.uuid4())
 
         augmented_messages = message.copy()
-        
+
         # Get response from LLM
         response = await self.open_ai_client.chat.completions.create(
             model=self.deployment,
             messages=augmented_messages,
             max_tokens=self.max_tokens
         )
-        
+
         response_content = response.choices[0].message.content
-            
         return response_content
+
+
+    async def store_messages(self, session_id: str, messages: List[Dict[str, str]]):
+        """Store messages in the memory system."""
+        # Store the message in memory
+
+        for msg in messages:
+            self.memory.store_message(
+                session_id=session_id,
+                role=msg["role"],
+                content=msg["content"]
+            )
