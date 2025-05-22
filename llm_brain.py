@@ -1,25 +1,17 @@
-import os
-from dotenv import load_dotenv
-from openai import AzureOpenAI
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationChain
+from langchain.prompts import ChatPromptTemplate
 
-class LLMBrain():
-    def __init__(self):
-        """Load API key from .env file"""
-        load_dotenv()
-        self.open_ai_client = AzureOpenAI(
-            azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"),
-            api_key = os.getenv("OPEN_AI_API_KEY"),
-            api_version="2024-12-01-preview"
-        )
+template = ChatPromptTemplate.from_messages([
+    ("system", "You are a helpful assistant."),
+    MessagesPlaceholder(variable_name="history"),
+    ("human", "{input}")
+])
 
-    def chat(self, message):
-        """Chat with the AI bot"""
-        model_name = "gpt-4o"
-        deployment = "gpt-4o"
+memory = ConversationBufferMemory(return_messages=True, memory_key="history")
 
-        response = self.open_ai_client.chat.completions.create(
-            model=deployment, # model = "deployment_name".
-            messages=message
-        )
-        
-        return response.choices[0].message.content
+chain = ConversationChain(
+    llm=llm,
+    prompt=template,
+    memory=memory
+)
